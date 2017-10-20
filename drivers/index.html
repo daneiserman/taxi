@@ -1,0 +1,321 @@
+<head>
+    <meta charset="utf8">
+</head>
+<body>
+<div id="tabs-panel">
+    <div class="tab-button active" data-tab="auth">
+        Вход
+    </div>
+    <div class="tab-button" data-tab="reg">
+        Регистрация
+    </div>
+</div>
+
+<div id="tabs">
+<form class="tab active" id = "auth">
+    <span class="error" id="error_box"></span>
+    <p>Логин: <input type = "text" name = "driver_login" id = "login"><span id = "login"></span>
+    <p>Пароль: <input type = "password" name = "driver_password" id = "password"><span id = "password"></span>
+    <p><input type = "submit" name = "submit" id = "submit" value = "Войти" /></p>
+</form> 
+
+<form class="tab" id = "reg">
+    <p>Логин <input type = "text" name = "driver_login" id="login"> <span id = "login"></span>
+    <p>Пароль <input type = "password" name = "driver_password" id="password"> <span id = "password"></span>
+    <p>Повторите пароль <input type = "password" name = "password_test" id="password2"> <span id = "password2"></span>
+    <p>Ваше имя: <input type = "text" name = "driver_name" id="name"> <span id = "name"></span>
+    <p>Ваше отчество: <input type = "text" name = "driver_surname" id="surname"> <span id = "surname"></span>
+    <p>Ваше фамилия: <input type = "text" name = "driver_lastname" id="lastname"> <span id = "lastname"></span>  
+    <p>Ваш пол: <input type = "radio" name = "driver_gender" value = "Male" checked> мужской <input type = "radio" name = "driver_gender" value = "Female"> женский 
+    <p>Ваш телефон: <input type = "text" name = "driver_phone" id="phone"> <span id = "phone"></span>
+    <p><input type = "submit" id = "submit" name = "submit" value = "Зарегистрироваться"/>
+</form>
+</div>
+
+<style>
+.ok {
+    border: 1px solid green;
+}
+
+.error {
+    border: 1px solid red;
+}
+
+span.error {
+    color: red;
+    border: none;
+}
+</style>
+
+<style>
+        body {
+			font-family: Arial, Helvetica, sans-serif;
+		}
+       #tabs-panel {
+			width: 200px;
+		}
+		#tabs-panel:before,
+		#tabs-panel:after {
+			content: '';
+			display: table;
+		}
+		#tabs-panel:after {
+			clear: both;
+		}
+		.tab-button {
+			border: 1px solid #ddd;
+			border-bottom: none;
+			box-sizing: border-box;
+			cursor: pointer;
+			float: left;
+			font-family: sans-serif;
+			font-size: 0.8em;
+			margin: 0 2px;
+			padding: 5px;
+			text-align: center;
+			width:94px;
+
+			transition: all .3s ease-in-out;
+		}
+		.tab-button.active {
+			background: #eee;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
+		}
+		.tab-button:hover {
+			background: #eee
+		}
+		#tabs {
+			border: 1px solid #eee;
+			position: relative;
+			width: 100%;
+		}
+		.tab {
+			bottom: 0;
+			left: 0;
+			opacity: 0;
+			position: absolute;
+			right: 0;
+			top: 0;
+			z-index: 0;
+
+			transition: opacity .3s ease-in-out;
+		}
+		.tab.active {
+			opacity: 1;
+			z-index: 1;
+		}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('.tab-button').on('click', function(){
+        if(!$(this).hasClass('active')) {
+            $('.tab-button').removeClass('active');
+            $(this).addClass('active');
+
+            $('.tab').removeClass('active');
+            var tab = $(this).attr('data-tab');
+            $('#'+tab).addClass('active');
+        }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: 'redirect.php',
+            type: 'get',
+            success: function(location){
+                if(location == 'office.html') window.location.replace(location);
+            }
+        });
+    });
+
+    $(document).ready(function(){
+        $('form#auth').find('#login').blur(function(){
+            var val = $(this).val();
+            var error = $('form#auth').find('span#'+$(this).attr('id'));
+            error.addClass('error');
+
+            if(val != '') {
+                $(this).removeClass('error').addClass('ok');
+                error.text('');
+            }
+            else {
+                $(this).addClass('error').removeClass('ok');
+                error.text('Введите логин');
+            }
+        });
+
+        $('form#auth').find('#password').blur(function(){
+            var val = $(this).val();
+            var error = $('form#auth').find('span#'+$(this).attr('id'));
+            error.addClass('error');
+
+            if(val != '') {
+                $(this).removeClass('error').addClass('ok');
+                error.text('');
+            }
+            else {
+                $(this).addClass('error').removeClass('ok');
+                error.text('Введите пароль');
+            }
+        });
+
+        $('form#auth').submit(function(e){
+            e.preventDefault();
+
+            if($('form#auth').find('.ok').length == 2) {
+                $.ajax({
+                    url: 'login.php',
+                    type: 'post',
+                    data: $(this).serialize(),
+
+                    beforeSend: function(){
+                        $('form#auth').find('input').attr('disbled', true)
+                    },
+                    
+                    success: function(response) {
+                        if(response != 'success')
+                        {
+                            $('#error_box').text(response);
+                            $('form#auth:input').attr('disbled', false)
+                        }
+                        else window.location.replace('office.html')                 
+                    }
+                });
+            }
+            else return false;
+        });
+    });
+
+    $(document).ready(function(){
+        $('form#reg').find('input:text').blur(function(){
+            var id = $(this).attr('id');
+            var val = $(this).val();
+            var error = $('form#reg').find('span#'+id);
+            error.addClass('error');
+
+            if(val != '') {
+                switch(id)
+                {
+                    case 'login':
+                        var pattern = /^[a-zA-Z0-9_-]{3,16}$/;
+                        if(pattern.test(val)) {
+                            $.ajax({
+                                url: 'verify_login.php',
+                                type: 'post',
+                                data: 'login='+val,
+                                context: $('form#reg').find('input#login'),
+                                success: function(data) {
+                                    if(data == '1')
+                                    {
+                                        $(this).removeClass('error').addClass('ok');
+                                        error.text('');
+                                    }
+                                    else {
+                                        $(this).addClass('error').removeClass('ok');
+                                        error.text('Такой логин уже занят!');
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            $(this).addClass('error').removeClass('ok');
+                            error.text('Логин может содеражть буквы латинского алфавита, цифры, нижнее подчеркивание и дефиз! Длина логина от 3 до 16 символов!');
+                        }
+                    break;
+
+                    case 'name':
+                    case 'surname':
+                    case 'lastname':
+                        var pattern = /^[А-ЯЁ][а-яё]+$/;
+                        if(pattern.test(val)) {
+                            $(this).removeClass('error').addClass('ok');
+                            error.text('');
+                        }
+                        else {
+                            $(this).addClass('error').removeClass('ok');
+                            error.text('Используйте только русские буквы! Начните с большой буквы!');
+                        }
+                    break;
+
+                    case 'phone':
+                        var pattern = /^8-\d{3}-\d{3}-\d{2}-\d{2}$/;
+                        if(pattern.test(val)) {
+                            $(this).removeClass('error').addClass('ok');
+                            error.text('');
+                        }
+                        else {
+                            $(this).addClass('error').removeClass('ok');
+                            error.text('Вводите номер как 8-XXX-XXX-XX-XX');
+                        }
+                }
+            }
+            else {
+                $(this).addClass('error').removeClass('ok');
+                error.text('Поле обязательно для заполнения!');
+            }
+        });
+
+        $('form#reg').find('input:password').blur(function(){
+            var id = $(this).attr('id');
+            var val = $(this).val();
+            var error = $('form#reg').find('span#'+id);
+            error.addClass('error');
+
+            if(val != '') {
+                switch(id)
+                {
+                    case 'password':
+                        var pattern = /^[a-zA-Z0-9_-]{4,16}$/;
+                        if(pattern.test(val)) {
+                            $(this).removeClass('error').addClass('ok');
+                            error.text('');
+                        }
+                        else {
+                            $(this).addClass('error').removeClass('ok');
+                            error.text('Пароль может содеражть буквы латинского алфавита, цифры, нижнее подчеркивание и дефиз! Длина пароля от 6 до 16 символов!');
+                        }
+                    break;
+                    
+                    case 'password2':
+                        if(val == $('form#reg').find('#password').val()) {
+                            $(this).removeClass('error').addClass('ok');
+                            error.text('');
+                        }
+                        else {
+                            $(this).addClass('error').removeClass('ok');
+                            error.text('Пароли не совпадают!');
+                        }
+                }
+            }
+            else {
+                $(this).addClass('error').removeClass('ok');
+                error.text('Поле обязательно для заполнения!');
+            }
+        });
+
+        $('form#reg').submit(function(e){
+            e.preventDefault();
+            
+            if($('form#reg').find('.ok').length == 7) {
+                $.ajax({
+                    url: 'reg.php',
+                    type: 'post',
+                    data: $(this).serialize(),
+
+                    beforeSend: function(){
+                        $('form#reg').find('input').attr('disbled', true)
+                    },
+
+                    success: window.location.replace('office.html')
+                });
+            }
+            else return false;
+        });
+    });
+</script>
+</body>
